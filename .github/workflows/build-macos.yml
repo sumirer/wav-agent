@@ -11,8 +11,9 @@ on:
 
 jobs:
   dmg:
-    # macOS 宿主机是构建 dmg 的硬性要求（dmg 依赖 hdiutil）
-    runs-on: macos-latest
+    # 不用 macos-latest：macOS 26 的 hdiutil 有已知 bug，会让 dmg 生成失败。
+    # 固定到 macos-15（arm64）保证构建可复现；如需更老的系统可换成 macos-14。
+    runs-on: macos-15
     env:
       # 未配置 Apple Developer 证书时跳过签名，避免构建因找不到签名身份而失败。
       # 配好签名证书与 secrets 后删掉这一行即可自动签名。
@@ -28,14 +29,30 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # hdiutil 创建磁盘映像时，Spotlight 索引会占用产物导致 "Resource busy"。
+      # 关掉索引是社区验证过的解法，尤其影响「连续构建多个 dmg」的场景。
+      - name: Disable Spotlight indexing
+        run: sudo mdutil -a -i off
+
       - name: Build dmg
+        # --publish never 必须加：git remote 指向 GitHub 时 electron-builder 会
+        # 自动推断出 GitHub Releases 发布目标，构建完就去发布并要求 GH_TOKEN。
         run: |
+          ARCH_FLAG=""
           if [ "${{ inputs.universal }}" = "true" ]; then
-            npm run build
-            npx electron-builder --mac --universal
-          else
-            npm run dist:mac
+            ARCH_FLAG="--universal"
           fi
+          npm run build
+          npx electron-builder --mac $ARCH_FLAG --publish never
+
+      # 构建失败时重跑一次 hdiutil，但不带 -quiet，把真实报错打出来便于定位
+      - name: Diagnose hdiutil failure
+        if: failure()
+        run: |
+          for APP in release/mac*/WAV\ Agent.app; do
+            echo "=== $APP ==="
+            hdiutil create -srcfolder "$APP" -volname diag -format UDRW -fs APFS /tmp/diag.dmg || true
+          done
 
       - name: Upload dmg
         uses: actions/upload-artifact@v4
