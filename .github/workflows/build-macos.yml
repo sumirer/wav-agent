@@ -1,0 +1,46 @@
+name: Build macOS
+
+# 手动触发：Actions 页面点 "Run workflow" 即可出 dmg
+on:
+  workflow_dispatch:
+    inputs:
+      universal:
+        description: '打包成单个通用包（体积约翻倍）'
+        type: boolean
+        default: false
+
+jobs:
+  dmg:
+    # macOS 宿主机是构建 dmg 的硬性要求（dmg 依赖 hdiutil）
+    runs-on: macos-latest
+    env:
+      # 未配置 Apple Developer 证书时跳过签名，避免构建因找不到签名身份而失败。
+      # 配好签名证书与 secrets 后删掉这一行即可自动签名。
+      CSC_IDENTITY_AUTO_DISCOVERY: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build dmg
+        run: |
+          if [ "${{ inputs.universal }}" = "true" ]; then
+            npm run build
+            npx electron-builder --mac --universal
+          else
+            npm run dist:mac
+          fi
+
+      - name: Upload dmg
+        uses: actions/upload-artifact@v4
+        with:
+          name: wav-agent-macos-dmg
+          path: release/*.dmg
+          if-no-files-found: error
+          retention-days: 14

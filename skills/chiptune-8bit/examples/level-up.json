@@ -1,0 +1,65 @@
+{
+  "duration": 1.2,
+  "sampleRate": 44100,
+  "channels": 1,
+  "normalize": true,
+  "layers": [
+    {
+      "waveform": "pulse",
+      "pulseWidth": 0.25,
+      "frequencyCurve": [
+        [0, 523.3],
+        [0.14, 523.3],
+        [0.15, 659.3],
+        [0.29, 659.3],
+        [0.3, 784.0],
+        [0.44, 784.0],
+        [0.45, 1046.5],
+        [0.7, 1046.5]
+      ],
+      "amplitude": 0.5,
+      "envelope": { "attack": 0.005, "decay": 0.06, "sustain": 0.6, "release": 0.08 },
+      "effects": { "bitcrush": 6 }
+    },
+    {
+      "waveform": "triangle",
+      "frequencyCurve": [
+        [0, 130.8],
+        [0.28, 130.8],
+        [0.3, 130.8],
+        [0.58, 130.8],
+        [0.6, 174.6],
+        [0.88, 174.6],
+        [0.9, 196.0],
+        [1.14, 196.0]
+      ],
+      "amplitude": 0.45,
+      "envelope": { "attack": 0.005, "decay": 0.05, "sustain": 0.35, "release": 0.05 },
+      "effects": { "bitcrush": 7 }
+    },
+    {
+      "waveform": "noise",
+      "amplitude": 0.22,
+      "envelope": { "attack": 0.001, "decay": 0.03, "sustain": 0, "release": 0.02 },
+      "startTime": 0,
+      "endTime": 0.06,
+      "effects": { "highpass": 4000, "bitcrush": 5 }
+    },
+    {
+      "waveform": "noise",
+      "amplitude": 0.22,
+      "envelope": { "attack": 0.001, "decay": 0.03, "sustain": 0, "release": 0.02 },
+      "startTime": 0.6,
+      "endTime": 0.66,
+      "effects": { "highpass": 4000, "bitcrush": 5 }
+    },
+    {
+      "waveform": "noise",
+      "amplitude": 0.22,
+      "envelope": { "attack": 0.001, "decay": 0.03, "sustain": 0, "release": 0.02 },
+      "startTime": 1.1,
+      "endTime": 1.16,
+      "effects": { "highpass": 4000, "bitcrush": 5 }
+    }
+  ]
+}
